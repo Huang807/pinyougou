@@ -41,14 +41,11 @@
                 perPageOptions:[10,20,30,40,50],//可以选择每页显示的行数
                 //当页码被改变的时候触发调用
                 onChange:function () {
-                  //  $scope.findPage()
-					$scope.reloadList();
+                   $scope.findPage()
+					//$scope.reloadList();
                 }
             };
-            $scope.reloadList=function () {
-				$scope.search($scope.paginationConf.currentPage,
-				$scope.paginationConf.itemsPerPage);
-            }
+
 
             //根据当前的页码,和每页显示的行数,分页查询
             $scope.findPage=function () {
@@ -61,22 +58,57 @@
                 )
             }
             //添加品牌
-            $scope.add=function () {
-				var methodName="add";
+            $scope.save=function () {
 				//如果entity中没有id,说明是新增
+				var methodName="add";
 				if ($scope.entity.id!=null){
-				   methodName="update";
+				    //如果entity中有id,说明是更新
+					methodName="update";
 				}
-				$http.post('../brand/'+methodName+'.do',
-				$scope.entity
+
+				$http.post('../brand/'+methodName+'.do',$scope.entity
 				).success(function (response) {
 					if(response.success){
 					    //新增成功
-						$scope.reloadList();
+						$scope.findPage();
 					}else{
 					    alert(response.message);
 					}
                 })
+            }
+            $scope.findOne=function (id) {
+				$http.get('../brand/findOne.do?id='+id).success(
+				    function (response) {
+						$scope.entity=response;
+                    }
+				)
+            }
+            //要删除选中商品,就要先获得选中的商品数量对应的id
+			//所以先创建一个数组变量
+			$scope.selectIds=[];
+			//当选中复选框的时候调用
+            $scope.updateSelection=function ($event,id) {
+				//$event就是获取dom的元素的封装的对象
+				if ($event.target.checked){
+				    //被勾选
+					$scope.selectIds.push(id);//添加元素
+				}else{
+				    //取消勾选
+					//参数一,要删除元素的索引,参数2,要删除的个数
+					$scope.selectIds.splice($scope.selectIds.indexOf(id),1)
+				}
+            }
+            //执行删除
+			$scope.delete=function () {
+				$http.get('../brand/delete.do?ids='+$scope.selectIds).success(
+				    function (response) {
+						if (response.success){
+						    $scope.findPage();
+						}else{
+						    alert(response.message);
+						}
+                    }
+				)
             }
         
         })
@@ -100,7 +132,7 @@ ng-app="pinyougou" ng-controller="brandController"
                                 <div class="form-group form-inline">
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-default" title="新建" data-toggle="modal" data-target="#editModal" ><i class="fa fa-file-o"></i> 新建</button>
-                                        <button type="button" class="btn btn-default" title="删除" ><i class="fa fa-trash-o"></i> 删除</button>           
+                                        <button type="button" class="btn btn-default" ng-click="delete()" title="删除" ><i class="fa fa-trash-o"></i> 删除</button>
                                         <button type="button" class="btn btn-default" title="刷新" onclick="window.location.reload();"><i class="fa fa-refresh"></i> 刷新</button>
                                     </div>
                                 </div>
@@ -117,7 +149,7 @@ ng-app="pinyougou" ng-controller="brandController"
 			                      <thead>
 			                          <tr>
 			                              <th class="" style="padding-right:0px">
-			                                  <input id="selall" type="checkbox" class="icheckbox_square-blue">
+			                                  <input id="selall" type="checkbox" ng-click="updateSelection($event,entity.id)" class="icheckbox_square-blue">
 			                              </th> 
 										  <th class="sorting_asc">品牌ID</th>
 									      <th class="sorting">品牌名称</th>
@@ -132,7 +164,7 @@ ng-app="pinyougou" ng-controller="brandController"
 									      <td>{{entity.name}}</td>
 		                                  <td>{{entity.firstChar}}</td>
 		                                  <td class="text-center">                                           
-		                                 	  <button type="button" class="btn bg-olive btn-xs" data-toggle="modal" data-target="#editModal"  >修改</button>                                           
+		                                 	  <button type="button" class="btn bg-olive btn-xs" data-toggle="modal" data-target="#editModal" ng-click="findOne(entity.id)" >修改</button>
 		                                  </td>
 			                          </tr>
 
@@ -160,18 +192,19 @@ ng-app="pinyougou" ng-controller="brandController"
 		</div>
 		<div class="modal-body">		
 			<table class="table table-bordered table-striped"  width="800px">
+				aaaa{{entity}}
 		      	<tr>
 		      		<td>品牌名称</td>
-		      		<td><input  class="form-control" placeholder="品牌名称" >  </td>
+		      		<td><input  class="form-control" placeholder="品牌名称" ng-model="entity.name">  </td>
 		      	</tr>		      	
 		      	<tr>
 		      		<td>首字母</td>
-		      		<td><input  class="form-control" placeholder="首字母">  </td>
+		      		<td><input  class="form-control" placeholder="首字母" ng-model="entity.firstChar">  </td>
 		      	</tr>		      	
 			 </table>				
 		</div>
 		<div class="modal-footer">						
-			<button class="btn btn-success" data-dismiss="modal" aria-hidden="true">保存</button>
+			<button class="btn btn-success" data-dismiss="modal" aria-hidden="true" ng-click="save()">保存</button>
 			<button class="btn btn-default" data-dismiss="modal" aria-hidden="true">关闭</button>
 		</div>
 	  </div>
