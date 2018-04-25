@@ -5,8 +5,11 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.pinyougou.mapper.TbBrandMapper;
 import com.pinyougou.pojo.TbBrand;
+import com.pinyougou.pojo.TbBrandExample;
 import com.pinyougou.sellergoods.service.BrandService;
 import entity.PageResult;
+import entity.Result;
+import org.apache.ibatis.jdbc.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -51,5 +54,26 @@ public class BrandServiceImpl implements BrandService {
             brandMapper.deleteByPrimaryKey(id);
         }            
         }
+
+    @Override
+    public PageResult findPage(TbBrand brand, Integer pageNum, Integer pageSize) {
+        //设置分页查询条件
+        PageHelper.startPage(pageNum,pageSize);
+        //紧跟着的第一个查询才会被分页
+        TbBrandExample example = new TbBrandExample();
+        TbBrandExample.Criteria criteria=example.createCriteria();
+        if(brand!=null){
+            //如果不等于空,添个查询条件
+            if (brand.getName()!=null&&brand.getName().length()>0){
+                criteria.andNameLike("%"+brand.getName()+"%");
+            }
+            if (brand.getFirstChar()!=null&&brand.getFirstChar().length()>0){
+                criteria.andFirstCharEqualTo(brand.getFirstChar());
+            }
+        }
+        List<TbBrand> tbBrands = brandMapper.selectByExample(example);
+        Page<TbBrand>page=(Page<TbBrand>) tbBrands;
+        return new PageResult(page.getTotal(),page.getResult());
+    }
 
 }
