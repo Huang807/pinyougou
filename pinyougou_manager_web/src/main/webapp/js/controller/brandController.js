@@ -1,80 +1,79 @@
-//2.定义一个controller
-app.controller('brandController', function ($scope,$controller,brandService) {
-    $controller('baseController',{$scope:$scope})
-    //发送请求去查询数据库的数据
-    $scope.findAll = function () {
-        brandService.findAll().success(
-            function (response) {//返回的数据就是[{},{}]
-                $scope.list = response;
-            }
-        )
-    }
-
-    //初始值
-    $scope.searchEntity = {};
-
-
-    //根据当前的页码 和每页显示的行数分页查询调用
-    $scope.findPage = function () {
-        brandService.findPage($scope.paginationConf.currentPage, $scope.paginationConf.itemsPerPage).success(
-            function (response) {//response 是PageResult
-                $scope.list = response.rows;//每页显示的行
-                $scope.paginationConf.totalItems = response.total;//总记录数
-            }
-        );
-    }
-    //添加品牌
-    $scope.save = function () {
-        //如果entity中没有ID的值说明是新增
-        var serviceObject = brandService.add($scope.entity);
-        // var methodName="add";
-        if ($scope.entity.id != null) {
-            //如果entity中有id的值说明是更新
-            serviceObject = brandService.update($scope.entity)
-        }
-        serviceObject.success(
-            function (response) {//result
-                if (response.success) {
-                    //新增成功 刷新列表
-                    $scope.reloadList();
-                } else {
-                    alert(response.message);
-                }
-
-            }
-        )
-
-
-    }
-
-    $scope.findOne = function (id) {
-        brandService.findOne(id).success(
-            function (response) {//tbbrand
-                $scope.entity = response;
-            }
-        )
-    }
-
-
-    //删除选中的品牌
-    $scope.dele = function () {
-        brandService.dele($scope.selectIds).success(
-            function (response) {//返回的是result
-                if (response.success) {
-                    $scope.reloadList();//刷新列表
-                } else {
-                    alert(response.message);
-                }
-            }
-        )
-    }
-
-    $scope.search = function (pageNum, pageSize) {
-        brandService.search(pageNum, pageSize, $scope.searchEntity).success(
-            function (response) {//pageResult
-                $scope.list = response.rows;//每页显示的行
-                $scope.paginationConf.totalItems = response.total;//总记录数
-            }
-        )
-    }
-})
+ //控制层 
+app.controller('brandController' ,function($scope,$controller   ,brandService){	
+	
+	$controller('baseController',{$scope:$scope});//继承
+	
+    //读取列表数据绑定到表单中  
+	$scope.findAll=function(){
+		brandService.findAll().success(
+			function(response){
+				$scope.list=response;
+			}			
+		);
+	}    
+	
+	//分页
+	$scope.findPage=function(page,rows){			
+		brandService.findPage(page,rows).success(
+			function(response){
+				$scope.list=response.rows;	
+				$scope.paginationConf.totalItems=response.total;//更新总记录数
+			}			
+		);
+	}
+	
+	//查询实体 
+	$scope.findOne=function(id){				
+		brandService.findOne(id).success(
+			function(response){
+				$scope.entity= response;					
+			}
+		);				
+	}
+	
+	//保存 
+	$scope.save=function(){				
+		var serviceObject;//服务层对象  				
+		if($scope.entity.id!=null){//如果有ID
+			serviceObject=brandService.update( $scope.entity ); //修改  
+		}else{
+			serviceObject=brandService.add( $scope.entity  );//增加 
+		}				
+		serviceObject.success(
+			function(response){
+				if(response.success){
+					//重新查询 
+		        	$scope.reloadList();//重新加载
+				}else{
+					alert(response.message);
+				}
+			}		
+		);				
+	}
+	
+	 
+	//批量删除 
+	$scope.dele=function(){			
+		//获取选中的复选框			
+		brandService.dele( $scope.selectIds ).success(
+			function(response){
+				if(response.success){
+					$scope.reloadList();//刷新列表
+				}						
+			}		
+		);				
+	}
+	
+	$scope.searchEntity={};//定义搜索对象 
+	
+	//搜索
+	$scope.search=function(page,rows){			
+		brandService.search(page,rows,$scope.searchEntity).success(
+			function(response){
+				$scope.list=response.rows;	
+				$scope.paginationConf.totalItems=response.total;//更新总记录数
+			}			
+		);
+	}
+    
+});	

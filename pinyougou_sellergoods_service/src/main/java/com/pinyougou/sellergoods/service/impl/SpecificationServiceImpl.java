@@ -100,6 +100,7 @@ public class SpecificationServiceImpl implements SpecificationService {
 		TbSpecification tbSpecification = specificationMapper.selectByPrimaryKey(id);
 		//构造规格的选项的列表
 		TbSpecificationOptionExample exmaple = new TbSpecificationOptionExample();
+		//根据规格id查询
 		exmaple.createCriteria().andSpecIdEqualTo(id);
 		List<TbSpecificationOption> optionList = optionMapper.selectByExample(exmaple);//sleec  * from option where specId=id
 

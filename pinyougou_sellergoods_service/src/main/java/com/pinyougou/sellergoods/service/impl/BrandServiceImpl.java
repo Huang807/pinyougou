@@ -1,5 +1,9 @@
 package com.pinyougou.sellergoods.service.impl;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.Page;
@@ -99,5 +103,18 @@ public class BrandServiceImpl implements BrandService {
 		Page<TbBrand> page= (Page<TbBrand>)brandMapper.selectByExample(example);		
 		return new PageResult(page.getTotal(), page.getResult());
 	}
-	
+
+	@Override
+	public List<Map> selectOptionList() {
+		List<TbBrand> tbBrands = brandMapper.selectByExample(null);
+		List<Map> brandList = new ArrayList<>();
+		for (TbBrand tbBrand : tbBrands) {
+			Map map = new HashMap();
+			map.put("id",tbBrand.getId());
+			map.put("text",tbBrand.getName());
+			brandList.add(map);
+		}
+		return brandList;
+	}
+
 }
