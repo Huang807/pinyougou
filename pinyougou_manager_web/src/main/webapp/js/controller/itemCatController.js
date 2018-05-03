@@ -75,5 +75,13 @@ app.controller('itemCatController' ,function($scope,$controller   ,itemCatServic
 			}			
 		);
 	}
+	//商品分类管理
+	$scope.findByParentId=function (parentId) {
+		itemCatService.findByParentId(parentId).success(
+			function (response) {
+				$scope.list=response;
+            }
+		)
+    }
     
 });	
